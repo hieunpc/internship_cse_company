@@ -1,6 +1,6 @@
 # CSE Internship Company
 
-## Chạy nhanh
+## How to run
 
 Yêu cầu: Node.js 18+
 
