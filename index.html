@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CSE Internship</title>
+        <link rel="icon" type="image/png" href="./img/01_logobachkhoatoi.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Mono:wght@500&display=swap"
+            rel="stylesheet" />
+        <link rel="stylesheet" href="./styles.css" />
+    </head>
+    <body>
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="grain"></div>
+
+        <main class="shell">
+            <section class="hero reveal">
+                <div class="hero-brand">
+                    <img class="hero-brand-logo" src="./img/01_logobachkhoatoi.png" alt="Logo BK" />
+                    <div>
+                        <p class="eyebrow">Internship</p>
+                        <h1>CSE Company List</h1>
+                    </div>
+                </div>
+                <div class="hero-meta">
+                    <div class="meta-chip">
+                        <span class="chip-label">Nguồn dữ liệu</span>
+                        <strong>internship.cse.hcmut.edu.vn</strong>
+                    </div>
+                    <div class="meta-chip">
+                        <span class="chip-label">Cập nhật</span>
+                        <strong id="lastUpdated">Đang tải...</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="kpi-grid">
+                <article class="kpi reveal">
+                    <p>Tổng công ty</p>
+                    <h2 id="kpiTotal">0</h2>
+                </article>
+                <article class="kpi reveal">
+                    <p>Sinh viên đăng ký</p>
+                    <h2 id="kpiRegister">0</h2>
+                </article>
+                <article class="kpi reveal">
+                    <p>Sinh viên đã nhận</p>
+                    <h2 id="kpiAccepted">0</h2>
+                </article>
+            </section>
+
+            <section class="panel reveal">
+                <div class="panel-top">
+                    <h3>Bộ lọc</h3>
+                    <button id="resetFilterBtn" class="ghost-btn" type="button">Reset</button>
+                </div>
+
+                <div class="control-grid">
+                    <label class="control">
+                        <span>Tìm theo tên</span>
+                        <input id="searchInput" type="search" placeholder="Ví dụ: Fsoft, Bosch, Nhật Bản..." />
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel reveal">
+                <div class="panel-top">
+                    <h3>Danh sách công ty</h3>
+                    <div class="panel-actions">
+                        <p id="resultCount" class="result-count">0 kết quả</p>
+                        <div class="top-pager" aria-label="Điều hướng danh sách công ty">
+                            <button id="topPrevPageBtn" class="icon-nav-btn" type="button" aria-label="Trang trước">
+                                &#x2039;
+                            </button>
+                            <span id="topPageInfo" class="top-page-info">1/1</span>
+                            <button id="topNextPageBtn" class="icon-nav-btn" type="button" aria-label="Trang sau">
+                                &#x203A;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Logo</th>
+                                <th>Shortname</th>
+                                <th>Fullname</th>
+                                <th>Đăng tải</th>
+                            </tr>
+                        </thead>
+                        <tbody id="companyTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="pagination" class="pagination"></div>
+            </section>
+
+            <section id="statusBox" class="status-box" aria-live="polite"></section>
+        </main>
+
+        <aside id="detailDrawer" class="drawer" aria-hidden="true">
+            <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+                <div class="drawer-header">
+                    <h3 id="drawerTitle">Chi tiết công ty</h3>
+                    <button id="closeDrawerBtn" class="ghost-btn" type="button">Đóng</button>
+                </div>
+                <div id="drawerBody" class="drawer-body"></div>
+            </div>
+        </aside>
+
+        <script src="./app.js"></script>
+    </body>
+</html>
