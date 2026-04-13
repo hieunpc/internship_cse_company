@@ -112,7 +112,7 @@ h1 {
 
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.6rem;
 }
 
@@ -462,6 +462,11 @@ tbody tr {
     border-radius: 999px;
     padding: 0.18rem 0.6rem;
     font-weight: 700;
+}
+
+.detail-value-max-register {
+    color: #f44545;
+    background: #fcebed;
 }
 
 .detail-value-register {

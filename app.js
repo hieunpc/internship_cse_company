@@ -22,6 +22,7 @@ const state = {
 
 const elements = {
   kpiTotal: document.querySelector("#kpiTotal"),
+  kpiTotalStudents: document.querySelector("#kpiTotalStudents"),
   kpiRegister: document.querySelector("#kpiRegister"),
   kpiAccepted: document.querySelector("#kpiAccepted"),
   searchInput: document.querySelector("#searchInput"),
@@ -258,6 +259,7 @@ function getFilteredSortedList() {
 
 function renderKpis() {
   elements.kpiTotal.textContent = formatNumber(state.companies.length);
+  elements.kpiTotalStudents.textContent = formatNumber(state.meta.numberInterns);
   elements.kpiRegister.textContent = formatNumber(state.meta.numberStudentRegisters);
   elements.kpiAccepted.textContent = formatNumber(state.meta.numberAccepted);
 }
@@ -381,6 +383,10 @@ async function openCompanyDetail(companyId, fallbackName = "") {
     const summary = htmlToPlainText(item.description || item.work || "");
     const summarySnippet = summary ? `${summary.slice(0, 450)}...` : "Không có mô tả";
     const files = buildDetailFiles(item);
+    const companyInfo =
+      Array.isArray(item.contactEmails) && item.contactEmails.length
+        ? item.contactEmails.join(", ")
+        : item.shortname || "Đang cập nhật";
 
     elements.drawerTitle.textContent = item.shortname || fallbackName || companyId;
     elements.drawerBody.innerHTML = `
@@ -391,11 +397,7 @@ async function openCompanyDetail(companyId, fallbackName = "") {
           <span class="detail-value detail-value-address">${item.address || "-"}</span>
         </p>
         <p class="detail-row">
-          <span class="detail-label">Active</span>
-          <span class="detail-value">${item.active ? "Có" : "Không"}</span>
-        </p>
-        <p class="detail-row">
-          <span class="detail-label">Cập nhật file gần nhất</span>
+          <span class="detail-label">Cập nhật gần nhất</span>
           <span class="detail-value">${lastFileUpdateLabel}</span>
         </p>
       </div>
@@ -403,13 +405,19 @@ async function openCompanyDetail(companyId, fallbackName = "") {
       <div class="detail-card">
         <h4 class="detail-title">Chỉ số thực tập</h4>
         <p class="detail-row detail-metric-row">
+          <span class="detail-label">Số lượng đăng ký tối đa</span>
+          <span class="detail-value detail-value-metric detail-value-max-register">${formatNumber(
+            item.maxRegister
+          )}</span>
+        </p>
+        <p class="detail-row detail-metric-row">
           <span class="detail-label">Sinh viên đăng ký</span>
           <span class="detail-value detail-value-metric detail-value-register">${formatNumber(
             item.studentRegister
           )}</span>
         </p>
         <p class="detail-row detail-metric-row">
-          <span class="detail-label">Sinh viên đã nhận</span>
+          <span class="detail-label">Sinh viên đã được nhận</span>
           <span class="detail-value detail-value-metric detail-value-accepted">${formatNumber(
             item.studentAccepted
           )}</span>
