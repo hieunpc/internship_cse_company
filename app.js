@@ -57,14 +57,60 @@ function formatNumber(value) {
   return new Intl.NumberFormat("vi-VN").format(value || 0);
 }
 
-function getPostedAtFromObjectId(objectId) {
-  if (!/^[a-fA-F0-9]{24}$/.test(objectId || "")) return 0;
-  return parseInt(objectId.slice(0, 8), 16) * 1000;
-}
-
 function formatDateTime(value) {
   if (!value) return "-";
   return new Date(value).toLocaleString("vi-VN");
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  return new Date(value).toLocaleDateString("vi-VN");
+}
+
+function getLatestFileUpdateTimestamp(item) {
+  const texts = [];
+
+  if (item.internshipFile) texts.push(item.internshipFile);
+  if (item.newInternshipFile) texts.push(item.newInternshipFile);
+
+  if (Array.isArray(item.internshipFiles)) {
+    item.internshipFiles.forEach((file) => {
+      if (!file) return;
+      if (file.name) texts.push(file.name);
+      if (file.path) texts.push(file.path);
+      if (file.url) texts.push(file.url);
+    });
+  }
+
+  const regex = /(\d{4})[-_](\d{2})[-_](\d{2})/g;
+  let latest = 0;
+
+  texts.forEach((text) => {
+    if (!text) return;
+
+    regex.lastIndex = 0;
+    let match;
+    while ((match = regex.exec(String(text))) !== null) {
+      const y = Number(match[1]);
+      const m = Number(match[2]);
+      const d = Number(match[3]);
+      const dateObj = new Date(y, m - 1, d);
+
+      if (
+        Number.isNaN(dateObj.getTime()) ||
+        dateObj.getFullYear() !== y ||
+        dateObj.getMonth() !== m - 1 ||
+        dateObj.getDate() !== d
+      ) {
+        continue;
+      }
+
+      const ts = dateObj.getTime();
+      if (ts > latest) latest = ts;
+    }
+  });
+
+  return latest;
 }
 
 function toAbsoluteFileUrl(filePath) {
@@ -199,8 +245,13 @@ function getFilteredSortedList() {
     });
   }
 
-  // Keep API ordering but reverse it: from last element to first element.
-  list.sort((a, b) => (b.apiIndex || 0) - (a.apiIndex || 0));
+  // Sort by latest update date from attachment file names (newest first).
+  // Fallback keeps previous reverse API ordering for ties or missing dates.
+  list.sort((a, b) => {
+    const diff = (b.lastFileUpdateAt || 0) - (a.lastFileUpdateAt || 0);
+    if (diff !== 0) return diff;
+    return (b.apiIndex || 0) - (a.apiIndex || 0);
+  });
 
   return list;
 }
@@ -261,7 +312,7 @@ function renderTable() {
           </td>
           <td>${company.shortname || "-"}</td>
           <td>${company.fullname || "-"}</td>
-          <td>${company.postedAtLabel || "-"}</td>
+          <td>${company.lastFileUpdateLabel || "-"}</td>
         </tr>
       `;
     })
@@ -325,8 +376,8 @@ async function openCompanyDetail(companyId, fallbackName = "") {
     }
 
     const item = data.item || {};
-    const postedAt = getPostedAtFromObjectId(item._id);
-    const postedAtLabel = formatDateTime(postedAt);
+    const lastFileUpdateAt = getLatestFileUpdateTimestamp(item);
+    const lastFileUpdateLabel = formatDate(lastFileUpdateAt);
     const summary = htmlToPlainText(item.description || item.work || "");
     const summarySnippet = summary ? `${summary.slice(0, 450)}...` : "Không có mô tả";
     const files = buildDetailFiles(item);
@@ -335,22 +386,40 @@ async function openCompanyDetail(companyId, fallbackName = "") {
     elements.drawerBody.innerHTML = `
       <div class="detail-card">
         <h4 class="detail-title">${item.fullname || "-"}</h4>
-        <p class="detail-row"><strong>Địa chỉ:</strong> ${item.address || "-"}</p>
-        <p class="detail-row"><strong>Active:</strong> ${item.active ? "Có" : "Không"}</p>
-        <p class="detail-row"><strong>Đăng tải (ước lượng):</strong> ${postedAtLabel}</p>
+        <p class="detail-row detail-address-row">
+          <span class="detail-label">Địa chỉ</span>
+          <span class="detail-value detail-value-address">${item.address || "-"}</span>
+        </p>
+        <p class="detail-row">
+          <span class="detail-label">Active</span>
+          <span class="detail-value">${item.active ? "Có" : "Không"}</span>
+        </p>
+        <p class="detail-row">
+          <span class="detail-label">Cập nhật file gần nhất</span>
+          <span class="detail-value">${lastFileUpdateLabel}</span>
+        </p>
       </div>
 
       <div class="detail-card">
         <h4 class="detail-title">Chỉ số thực tập</h4>
-        <p class="detail-row"><strong>Sinh viên đăng ký:</strong> ${formatNumber(
-          item.studentRegister
-        )}</p>
-        <p class="detail-row"><strong>Sinh viên đã nhận:</strong> ${formatNumber(
-          item.studentAccepted
-        )}</p>
-        <p class="detail-row"><strong>Max accepted:</strong> ${formatNumber(
-          item.maxAcceptedStudent
-        )}</p>
+        <p class="detail-row detail-metric-row">
+          <span class="detail-label">Sinh viên đăng ký</span>
+          <span class="detail-value detail-value-metric detail-value-register">${formatNumber(
+            item.studentRegister
+          )}</span>
+        </p>
+        <p class="detail-row detail-metric-row">
+          <span class="detail-label">Sinh viên đã nhận</span>
+          <span class="detail-value detail-value-metric detail-value-accepted">${formatNumber(
+            item.studentAccepted
+          )}</span>
+        </p>
+        <p class="detail-row detail-metric-row">
+          <span class="detail-label">Max accepted</span>
+          <span class="detail-value detail-value-metric detail-value-max">${formatNumber(
+            item.maxAcceptedStudent
+          )}</span>
+        </p>
       </div>
 
       <div class="detail-card">
@@ -481,15 +550,34 @@ async function loadCompanies() {
 
     const payload = await response.json();
 
-    state.companies = (payload.items || []).map((company, index) => {
-      const postedAt = getPostedAtFromObjectId(company._id);
-      return {
-        ...company,
-        apiIndex: index,
-        postedAt,
-        postedAtLabel: formatDateTime(postedAt),
-      };
-    });
+    const companies = payload.items || [];
+
+    setStatus("Đang phân tích ngày cập nhật từ file đính kèm...");
+    const enrichedCompanies = await Promise.all(
+      companies.map(async (company, index) => {
+        let lastFileUpdateAt = 0;
+
+        try {
+          const res = await fetch(API.detail(company._id));
+          if (res.ok) {
+            const detailData = await res.json();
+            state.detailCache.set(company._id, detailData);
+            lastFileUpdateAt = getLatestFileUpdateTimestamp(detailData.item || {});
+          }
+        } catch (error) {
+          // Keep company in list even if one detail request fails.
+        }
+
+        return {
+          ...company,
+          apiIndex: index,
+          lastFileUpdateAt,
+          lastFileUpdateLabel: formatDate(lastFileUpdateAt),
+        };
+      })
+    );
+
+    state.companies = enrichedCompanies;
     state.meta.numberAccepted = payload.numberAccepted || 0;
     state.meta.numberInterns = payload.numberInterns || 0;
     state.meta.numberStudentRegisters = payload.numberStudentRegisters || 0;
@@ -500,7 +588,9 @@ async function loadCompanies() {
     const now = new Date();
     elements.lastUpdated.textContent = now.toLocaleString("vi-VN");
     setStatus(
-      `Đã tải ${formatNumber(state.companies.length)} công ty. Cập nhật lần cuối: ${elements.lastUpdated.textContent}`
+      `Đã tải ${formatNumber(
+        state.companies.length
+      )} công ty. Danh sách đang xếp theo ngày cập nhật file đính kèm mới nhất.`
     );
   } catch (error) {
     setStatus(`Lỗi tải dữ liệu: ${error.message}`, true);
