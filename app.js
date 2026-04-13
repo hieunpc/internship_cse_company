@@ -376,12 +376,6 @@ async function openCompanyDetail(companyId, fallbackName = "") {
             : '<p class="detail-row">Công ty chưa có file đính kèm.</p>'
         }
       </div>
-
-      <div class="detail-card">
-        <a href="${CSE_BASE}/home/company/id/${encodeURIComponent(
-          item._id || companyId
-        )}" target="_blank" rel="noreferrer">Mở trang chi tiết trên CSE</a>
-      </div>
     `;
 
     if (files.length) {
@@ -506,7 +500,7 @@ async function loadCompanies() {
     const now = new Date();
     elements.lastUpdated.textContent = now.toLocaleString("vi-VN");
     setStatus(
-      `Đã tải ${formatNumber(state.companies.length)} công ty. Thứ tự hiển thị đang theo danh sách API từ cuối về đầu.`
+      `Đã tải ${formatNumber(state.companies.length)} công ty. Cập nhật lần cuối: ${elements.lastUpdated.textContent}`
     );
   } catch (error) {
     setStatus(`Lỗi tải dữ liệu: ${error.message}`, true);
