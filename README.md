@@ -23,6 +23,23 @@ Mở trình duyệt tại:
 http://localhost:5173
 ```
 
+## Deploy Railway (Realtime)
+
+Repo đã sẵn sàng deploy Railway với:
+
+- `package.json` (`npm start` -> `node server.js`)
+- `railway.json` (Nixpacks + start command)
+
+Các bước deploy:
+
+1. Vào Railway Dashboard: https://railway.app/
+2. Chọn `New Project` -> `Deploy from GitHub repo`
+3. Chọn repo `hieunpc/internship_cse_company`
+4. Railway sẽ tự build/deploy từ `main`
+5. Vào tab `Settings` của service -> `Generate Domain` để lấy URL public
+
+Mỗi lần push `main`, Railway sẽ tự redeploy.
+
 ## Kiến trúc
 
 - `server.js`: local server + proxy API để tránh CORS
