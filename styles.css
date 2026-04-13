@@ -456,7 +456,7 @@ tbody tr {
 
 .preview-frame {
     width: 100%;
-    height: min(65vh, 620px);
+    height: min(78vh, 860px);
     border: 0;
 }
 
@@ -522,6 +522,6 @@ body.modal-open {
     }
 
     .preview-frame {
-        height: 52vh;
+        height: 64vh;
     }
 }
