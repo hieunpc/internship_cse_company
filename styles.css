@@ -206,6 +206,11 @@ h1 {
     gap: 0.34rem;
 }
 
+#searchInput {
+    border: none;
+    outline: none;
+}
+
 .control span {
     font-size: 0.84rem;
     color: var(--muted);
